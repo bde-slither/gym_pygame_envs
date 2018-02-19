@@ -36,61 +36,43 @@ class PyGameWrapper(gym.Env):
         >>> }
     """
 
-    def __init__(self, width, height, actions={}):
-
+    def __init__(self, width, height, fps=30, force_fps=False, display_screen=True,actions={}):
+        """Call super for this function in child class."""
         # Required fields
-        self.actions = actions  # holds actions
-
-        self.score = 0.0  # required.
-        self.lives = 0  # required. Can be 0 or -1 if not required.
+        self.action_space = None  # holds actions
         self.screen = None  # must be set to None
         self.clock = None  # must be set to None
         self.height = height
         self.width = width
         self.screen_dim = (width, height)  # width and height
-        self.allowed_fps = None  # fps that the game is allowed to run at.
+        self.display_screen = display_screen
+
+        self.score = 0.0  # required.
+        self.lives = 0  # required. Can be 0 or -1 if not required.
+
+        self.fps = fps  # fps that the game is allowed to run at.
         self.NOOP = K_F15  # the noop key
-        self.rng = None
 
-        self.rewards = {
-            "positive": 1.0,
-            "negative": -1.0,
-            "tick": 0,
-            "loss": -5.0,
-            "win": 5.0
-        }
 
-    def _setup(self):
-        """
-        Setups up the pygame env, the display and game clock.
-        """
+        # intializing viwer for rendering.
+        self.viewer = None
+
+        # setup PyGame
         pygame.init()
         self.screen = pygame.display.set_mode(self.getScreenDims(), 0, 32)
         self.clock = pygame.time.Clock()
 
-    def _setAction(self, action, last_action):
+        # initialize the Game, raise error if not implemented.
+        self.startState()
+
+    def startState(self):
         """
-        Pushes the action to the pygame event queue.
+        This is used to initialize the game, such reseting the score, lives, and player position.
+
+        This is game dependent.
+
         """
-        if action is None:
-            action = self.NOOP
-
-        if last_action is None:
-            last_action = self.NOOP
-
-        kd = pygame.event.Event(KEYDOWN, {"key": action})
-        ku = pygame.event.Event(KEYUP, {"key": last_action})
-
-        pygame.event.post(kd)
-        pygame.event.post(ku)
-
-    def _draw_frame(self, draw_screen):
-        """
-        Decides if the screen will be drawn too
-        """
-
-        if draw_screen == True:
-            pygame.display.update()
+        raise NotImplementedError("Please override this method")
 
     def getScreenRGB(self):
         """
@@ -106,34 +88,75 @@ class PyGameWrapper(gym.Env):
         return pygame.surfarray.array3d(
             pygame.display.get_surface()).astype(np.uint8)
 
+    def _draw_frame(self, draw_screen):
+        """
+        Decides if the screen will be drawn too
+        """
+
+        if draw_screen == True:
+            pygame.display.update()
+
     def tick(self, fps):
         """
         This sleeps the game to ensure it runs at the desired fps.
         """
-        return self.clock.tick_busy_loop(fps)
+        if self.force_fps:
+            return 1000.0 / self.fps
+        else:
+            return self.clock.tick_busy_loop(fps)
 
-    def adjustRewards(self, rewards):
+    def step(self, action):
+        """Call super when overriding this function if you want to draw game screen
+        at each step after taking desired actions.
+        Run one timestep of the environment's dynamics. When end of
+        episode is reached, you are responsible for calling `reset()`
+        to reset this environment's state.
+        Accepts an action and returns a tuple (observation, reward, done, info).
+
+        Args:
+            action (object): an action provided by the environment
+        Returns:
+            observation (object): agent's observation of the current environment
+            reward (float) : amount of reward returned after previous action
+            done (boolean): whether the episode has ended, in which case further step() calls will return undefined results
+            info (dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning)
         """
+        if action not in self.action_space:
+            self.performAction(action)
+        else:
+            raise TypeError("action not in Action space.")
+        self.tick()
+        self._draw_frame(self.display_screen)
+        return None
 
-        Adjusts the rewards the game gives the agent
-
-        Parameters
-        ----------
-        rewards : dict
-            A dictonary of reward events to float rewards. Only updates if key matches those specificed in the init function.
-
+    def reset(self):
+        """Resets the state of the environment and returns an initial observation.
+        Returns: observation (object): the initial observation of the
+            space.
         """
-        for key in rewards.keys():
-            if key in self.rewards:
-                self.rewards[key] = rewards[key]
+        self.startState()
 
-    def setRNG(self, rng):
+    def render(self, mode='human'):
         """
-        Sets the rng for games.
+        This method render scenes taken from pygame.
         """
+        if mode == 'rgb_array':
+                    return self.getScreenRGB()# return RGB frame suitable for video
+        elif mode is 'human':
+            from gym.envs.classic_control import rendering
+            if self.viewer is None:
+                self.viewer = rendering.SimpleImageViewer()
+                self.viewer.imshow(img)
+        else:
+            raise ValueError
 
-        if self.rng is None:
-            self.rng = rng
+    def close(self):
+        pygame.quit()
+        if self.viewer: self.viewer.close()
+
+    def performAction(self, action):
+        """Define the how the game behaves for a given action."""
+        raise NotImplementedError
 
     def getGameState(self):
         """
@@ -158,66 +181,3 @@ class PyGameWrapper(gym.Env):
 
         """
         return self.screen_dim
-
-    def getActions(self):
-        """
-        Gets the actions used within the game.
-
-        Returns
-        -------
-        list of `pygame.constants`
-
-        """
-        return self.actions.values()
-
-    def init(self):
-        """
-        This is used to initialize the game, such reseting the score, lives, and player position.
-
-        This is game dependent.
-
-        """
-        raise NotImplementedError("Please override this method")
-
-    def reset(self):
-        """
-        Wraps the init() function, can be setup to reset certain poritions of the game only if needed.
-        """
-        self.init()
-
-    def getScore(self):
-        """
-        Return the current score of the game.
-
-
-        Returns
-        -------
-        int
-            The current reward the agent has received since the last init() or reset() call.
-        """
-        raise NotImplementedError("Please override this method")
-
-    def game_over(self):
-        """
-        Gets the status of the game, returns True if game has hit a terminal state. False otherwise.
-
-        This is game dependent.
-
-        Returns
-        -------
-        bool
-
-        """
-        raise NotImplementedError("Please override this method")
-
-    def step(self, dt):
-        """
-        This method steps the game forward one step in time equal to the dt parameter. The game does not run unless this method is called.
-
-        Parameters
-        ----------
-        dt : integer
-            This is the amount of time elapsed since the last frame in milliseconds.
-
-        """
-        raise NotImplementedError("Please override this method")
