@@ -11,18 +11,22 @@ class RandomAgent(object):
         self.action_space = action_space
 
     def act(self, observation, reward, done):
+        if type(observation) is dict:
+            print(observation)
         return self.action_space.sample()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('env_id', nargs='?', default='CartPole-v0', help='Select the environment to run')
+    parser.add_argument('env_id', nargs='?', default='ball_paddle-v0', help='Select the environment to run')
+    parser.add_argument('--obs_type', nargs='?', default='Image', help='Select observation type.')
     args = parser.parse_args()
 
     # You can set the level to logger.DEBUG or logger.WARN if you
     # want to change the amount of output.
     logger.set_level(logger.INFO)
-
     env = gym.make(args.env_id)
+    if args.env_id == 'ball_paddle-v0':
+        env.set_obs_type(args.obs_type)
 
     # You provide the directory to write to (can be an existing
     # directory, including one with existing data -- all monitor files

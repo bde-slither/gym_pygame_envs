@@ -54,7 +54,7 @@ class BallPaddleGame(base.PyGameWrapper):
 
     def __init__(self, obs_type="Image"):
 
-        self.obs_type = obs_type
+        self.set_obs_type(obs_type)
 
         # preload assets
 
@@ -76,6 +76,12 @@ class BallPaddleGame(base.PyGameWrapper):
                                                                     spaces.Box(low=BALL_DIAMETER, high=MAX_BALL_Y, shape=(1))),
                                                   "paddle": spaces.Tuple(spaces.Box(low=PADDLE_WIDTH, high=MAX_PADDLE_X, shape=(1)),
                                                                          spaces.Box(low=PADDLE_Y, high=PADDLE_Y, shape=(1)))})
+
+    def set_obs_type(self, obs_type):
+        if obs_type in ["Image", "dict"]:
+            self.obs_type = obs_type
+        else:
+            raise ValueError("Invalid observation type.")
 
     def startState(self):
         self.score = 0
