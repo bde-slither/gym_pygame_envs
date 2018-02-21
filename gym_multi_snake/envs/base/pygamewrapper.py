@@ -36,7 +36,7 @@ class PyGameWrapper(gym.Env):
         >>> }
     """
 
-    def __init__(self, width, height, fps=30, force_fps=False, display_screen=True,actions={}):
+    def __init__(self, width, height, fps=30, force_fps=False, display_screen=True):
         """Call super for this function in child class."""
         # Required fields
         self.action_space = None  # holds actions
@@ -47,9 +47,7 @@ class PyGameWrapper(gym.Env):
         self.screen_dim = (width, height)  # width and height
         self.display_screen = display_screen
 
-        self.score = 0.0  # required.
-        self.lives = 0  # required. Can be 0 or -1 if not required.
-
+        self.force_fps = force_fps
         self.fps = fps  # fps that the game is allowed to run at.
         self.NOOP = K_F15  # the noop key
 
@@ -121,11 +119,12 @@ class PyGameWrapper(gym.Env):
             done (boolean): whether the episode has ended, in which case further step() calls will return undefined results
             info (dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning)
         """
-        if action not in self.action_space:
-            self.performAction(action)
+        if self.action_space.contains(action):
+            self.set_pyagme_events(action)
         else:
             raise TypeError("action not in Action space.")
-        self.tick()
+        self.pygame_event_handler()
+        self.tick(self.fps)
         self._draw_frame(self.display_screen)
         return None
 
@@ -154,7 +153,11 @@ class PyGameWrapper(gym.Env):
         pygame.quit()
         if self.viewer: self.viewer.close()
 
-    def performAction(self, action):
+    def set_pyagme_events(self, action):
+        """Convert  gym action space to pygame events."""
+        raise NotImplementedError
+
+    def pygame_event_handler(self):
         """Define the how the game behaves for a given action."""
         raise NotImplementedError
 
