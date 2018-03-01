@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sys
 import numpy as np
 
@@ -22,7 +22,7 @@ BALL_RADIUS   = BALL_DIAMETER // 2
 
 WIDTH = 360
 HEIGHT = 480
-FPS = 30
+FPS = 60
 
 
 
@@ -52,34 +52,37 @@ class BallPaddleGame(base.PyGameWrapper):
     """ Main game class that implements gym functions to control the game."""
     metadata = {'render.modes': ['human', 'rgb_array']}
 
-    def __init__(self, obs_type="Image"):
+    def __init__(self):
 
-        self.set_obs_type(obs_type)
-
-        # preload assets
-
-        super().__init__(WIDTH, HEIGHT, FPS, False, True)
-
-        pygame.display.set_caption('basic')
+        super().__init__(WIDTH, HEIGHT, FPS, True, True)
 
         if pygame.font:
             self.font = pygame.font.Font(None,30)
         else:
             self.font = None
-        self.action_space = spaces.Discrete(2)
+        self.action_space = spaces.Discrete(3)
         self.observation_space = None
-        if obs_type == "Image":
-            self.screen_height, self.screen_width = self.getScreenDims()
-            self.observation_space = spaces.Box(low=0, high=255, shape=(self.screen_width, self.screen_height, 3))
-        else:
-            self.observation_space = spaces.Dict({"ball": spaces.Tuple(spaces.Box(low=BALL_DIAMETER, high=MAX_BALL_X, shape=(1)),
-                                                                    spaces.Box(low=BALL_DIAMETER, high=MAX_BALL_Y, shape=(1))),
-                                                  "paddle": spaces.Tuple(spaces.Box(low=PADDLE_WIDTH, high=MAX_PADDLE_X, shape=(1)),
-                                                                         spaces.Box(low=PADDLE_Y, high=PADDLE_Y, shape=(1)))})
 
     def set_obs_type(self, obs_type):
         if obs_type in ["Image", "dict"]:
             self.obs_type = obs_type
+            if obs_type == "Image":
+                super()._draw_frame(self.display_screen)
+                pygame.display.set_caption('basic')
+                self.screen_height, self.screen_width = self.getScreenDims()
+                self.observation_space = spaces.Box(low=0, high=255, shape=(self.screen_width, self.screen_height, 3))
+            else:
+                self.fps=300
+                self.display_screen = False
+                self.force_fps = True
+                self.observation_space = spaces.Dict({"ball": spaces.Tuple(( spaces.Box(low=BALL_DIAMETER, high=MAX_BALL_X, shape=()),
+                                                                             spaces.Box(low=BALL_DIAMETER, high=MAX_BALL_Y, shape=()) )
+                                                                        ),
+                                                      "paddle": spaces.Tuple(( spaces.Box(low=PADDLE_WIDTH, high=MAX_PADDLE_X, shape=()),
+                                                                               spaces.Box(low=PADDLE_Y, high=PADDLE_Y, shape=()))
+                                                                               )
+                                                    })
+
         else:
             raise ValueError("Invalid observation type.")
 
@@ -87,13 +90,12 @@ class BallPaddleGame(base.PyGameWrapper):
         self.score = 0
         self.state = STATE_PLAYING
 
-        self.paddle   = pygame.Rect(300,PADDLE_Y,PADDLE_WIDTH,PADDLE_HEIGHT)
+        self.paddle   = pygame.Rect(300*self.np_random.uniform(low=.3, high=1, size=1),PADDLE_Y,PADDLE_WIDTH,PADDLE_HEIGHT)
         self.ball     = pygame.Rect(300,PADDLE_Y - BALL_DIAMETER,BALL_DIAMETER,BALL_DIAMETER)
 
         self.ball.left = self.paddle.left + self.paddle.width / 2
         self.ball.top  = self.paddle.top - self.ball.height
-
-        self.ball_vel = [5,-5]
+        self.ball_vel = [.5,-2]
 
     def _move_ball(self):
         self.ball.left += self.ball_vel[0]
@@ -128,34 +130,28 @@ class BallPaddleGame(base.PyGameWrapper):
             self.screen.blit(font_surface, (205,5))
 
     def step(self, action):
-        self.screen.fill(BLACK)
         prev_score = self.score
         #self.check_input()
-        super().step(action)
         done = False
         reward = 0
         ob = None
+        super().step(action)
         if self.state == STATE_PLAYING:
             self._move_ball()
             self._handle_collisions()
             if prev_score < self.score:
-                reward = 100
+                reward += .01*self.score
+            else:
+                reward += .0005*self.score
 
         if self.state == STATE_GAME_OVER:
-            reward = -1000
+            reward +=  -1+ .01*self.score
             done = True
 
-        # Draw paddle
-        pygame.draw.rect(self.screen, BLUE, self.paddle)
-
-        # Draw ball
-        pygame.draw.circle(self.screen, WHITE, (self.ball.left + BALL_RADIUS, self.ball.top + BALL_RADIUS), BALL_RADIUS)
-
-        self.show_stats()
-
-        self._draw_frame(self.display_screen)
-
         if self.obs_type == "Image":
+
+            self._draw_frame(self.display_screen)
+
             ob = np.fliplr(np.rot90(self.getScreenRGB(),3))
         else:
             ob = {"ball":(self.ball.left + BALL_RADIUS, self.ball.top + BALL_RADIUS),
@@ -163,14 +159,41 @@ class BallPaddleGame(base.PyGameWrapper):
 
         return ob , reward, done, {}
 
+    def reset(self):
+        """Resets the state of the environment and returns an initial observation.
+        Returns: observation (object): the initial observation of the
+            space.
+        """
+        super().reset()
+        if self.obs_type == "Image":
+
+            self._draw_frame(self.display_screen)
+
+            ob = np.fliplr(np.rot90(self.getScreenRGB(),3))
+        else:
+            ob = {"ball":(self.ball.left + BALL_RADIUS, self.ball.top + BALL_RADIUS),
+                  "paddle":(self.paddle.left,self.paddle.top)}
+        return ob
+
+    def _draw_frame(self, draw_screen):
+        super()._draw_frame(draw_screen)
+        self.screen.fill(BLACK)
+        pygame.draw.rect(self.screen, BLUE, self.paddle)
+
+        # Draw ball
+        pygame.draw.circle(self.screen, WHITE, (self.ball.left + BALL_RADIUS, self.ball.top + BALL_RADIUS), BALL_RADIUS)
+
+        self.show_stats()
 
     def set_pyagme_events(self, action):
         """Convert  gym action space to pygame events."""
         kd = None
-        if action == 1:
+        if action == 2:
             kd = pygame.event.Event(KEYDOWN, {"key": K_RIGHT})
-        else:
+        elif action == 0:
             kd = pygame.event.Event(KEYDOWN, {"key": K_LEFT})
+        else:
+            kd = pygame.event.Event(KEYDOWN, {"key": K_w})
         pygame.event.post(kd)
 
 
@@ -184,11 +207,11 @@ class BallPaddleGame(base.PyGameWrapper):
             if event.type == pygame.KEYDOWN:
                 key = event.key
                 if key == pygame.K_LEFT:
-                    self.paddle.left -= 5
+                    self.paddle.left -= 7
                     if self.paddle.left < 0:
                         self.paddle.left = 0
 
-                if key==pygame.K_RIGHT:
-                    self.paddle.left += 5
+                elif key==pygame.K_RIGHT:
+                    self.paddle.left += 7
                     if self.paddle.left > MAX_PADDLE_X:
                         self.paddle.left = MAX_PADDLE_X

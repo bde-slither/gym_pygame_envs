@@ -1,1 +1,1 @@
-Initial Commit for the snake game.
+Small collection of Multi-agent gym Environments.

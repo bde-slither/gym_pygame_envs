@@ -40,10 +40,11 @@ class PyGameWrapper(gym.Env):
         """Call super for this function in child class."""
         # Required fields
         self.action_space = None  # holds actions
-        self.screen = None  # must be set to None
-        self.clock = None  # must be set to None
         self.height = height
         self.width = width
+        self.screen = None
+        self.clock = None
+
         self.screen_dim = (width, height)  # width and height
         self.display_screen = display_screen
 
@@ -51,17 +52,20 @@ class PyGameWrapper(gym.Env):
         self.fps = fps  # fps that the game is allowed to run at.
         self.NOOP = K_F15  # the noop key
 
-
         # intializing viwer for rendering.
         self.viewer = None
 
+        self.seed()
         # setup PyGame
         pygame.init()
-        self.screen = pygame.display.set_mode(self.getScreenDims(), 0, 32)
-        self.clock = pygame.time.Clock()
+
 
         # initialize the Game, raise error if not implemented.
         self.startState()
+
+    def seed(self, seed=None):
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
 
     def startState(self):
         """
@@ -90,9 +94,10 @@ class PyGameWrapper(gym.Env):
         """
         Decides if the screen will be drawn too
         """
-
-        if draw_screen == True:
-            pygame.display.update()
+        if self.screen == None or self.clock==None:
+                self.screen = pygame.display.set_mode(self.getScreenDims(), 0, 32)
+                self.clock = pygame.time.Clock()
+        pygame.display.update()
 
     def tick(self, fps):
         """
@@ -124,8 +129,9 @@ class PyGameWrapper(gym.Env):
         else:
             raise TypeError("action not in Action space.")
         self.pygame_event_handler()
+        if self.display_screen == True:
+            self._draw_frame(self.display_screen)
         self.tick(self.fps)
-        self._draw_frame(self.display_screen)
         return None
 
     def reset(self):
@@ -139,11 +145,13 @@ class PyGameWrapper(gym.Env):
         """
         This method render scenes taken from pygame.
         """
+        self._draw_frame(self.display_screen)
         if mode == 'rgb_array':
                     return self.getScreenRGB()# return RGB frame suitable for video
         elif mode is 'human':
             from gym.envs.classic_control import rendering
             if self.viewer is None:
+                img = np.fliplr(np.rot90(self.getScreenRGB(),3))
                 self.viewer = rendering.SimpleImageViewer()
                 self.viewer.imshow(img)
         else:
