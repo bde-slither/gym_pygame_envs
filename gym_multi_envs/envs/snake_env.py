@@ -4,7 +4,7 @@ import numpy as np
 
 import pygame
 from pygame.constants import K_w
-from gym_multi_snake.envs import base
+from gym_multi_envs.envs import base
 
 
 WIDTH = 360

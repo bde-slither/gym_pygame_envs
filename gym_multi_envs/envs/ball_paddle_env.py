@@ -9,7 +9,7 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 
-from gym_multi_snake.envs import base
+from gym_multi_envs.envs import base
 
 # Object dimensions
 BRICK_WIDTH   = 60
@@ -95,7 +95,7 @@ class BallPaddleGame(base.PyGameWrapper):
 
         self.ball.left = self.paddle.left + self.paddle.width / 2
         self.ball.top  = self.paddle.top - self.ball.height
-        self.ball_vel = [.5,-2]
+        self.ball_vel = [1,-2]
 
     def _move_ball(self):
         self.ball.left += self.ball_vel[0]
