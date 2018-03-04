@@ -39,12 +39,13 @@ class PyGameWrapper(gym.Env):
     def __init__(self, width, height, fps=30, force_fps=False, display_screen=True):
         """Call super for this function in child class."""
         # Required fields
+        self.rng = None
         self.action_space = None  # holds actions
         self.height = height
         self.width = width
         self.screen = None
         self.clock = None
-
+        self.dt = 0
         self.screen_dim = (width, height)  # width and height
         self.display_screen = display_screen
 
@@ -131,7 +132,7 @@ class PyGameWrapper(gym.Env):
         self.pygame_event_handler()
         if self.display_screen == True:
             self._draw_frame(self.display_screen)
-        self.tick(self.fps)
+        self.dt = self.tick(self.fps)
         return None
 
     def reset(self):

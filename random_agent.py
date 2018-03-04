@@ -2,7 +2,7 @@ import argparse
 import sys
 
 import gym
-import gym_multi_snake
+import gym_multi_envs
 from gym import wrappers, logger
 
 class RandomAgent(object):
