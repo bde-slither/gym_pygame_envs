@@ -148,7 +148,7 @@ class PyGameWrapper(gym.Env):
         """
         self._draw_frame(self.display_screen)
         if mode == 'rgb_array':
-                    return self.getScreenRGB()# return RGB frame suitable for video
+                    return np.fliplr(np.rot90(self.getScreenRGB(),3))# return RGB frame suitable for video
         elif mode is 'human':
             from gym.envs.classic_control import rendering
             if self.viewer is None:

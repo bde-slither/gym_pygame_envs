@@ -1,4 +1,4 @@
-""" This is a modified version of PLE pong.py to support openAI Gym. This version has support for multi agent control.
+""" This is a modified version of PLE pong.py to support openAI Gym.
 original code:
 https://github.com/ntasfi/PyGame-Learning-Environment/blob/master/ple/games/pong.py
 """
@@ -20,10 +20,14 @@ from gym_multi_envs.envs.base import vec2d, PyGameWrapper
 
 
 
-WIDTH = 480
-HEIGHT = 360
+WIDTH = 720
+HEIGHT = 480
 FPS = 60
 
+BLACK = (0,0,0)
+WHITE = (255,255,255)
+BLUE  = (0,0,255)
+RED  = (255,0,0)
 
 def percent_round_int(percent, x):
     return np.round(percent * x).astype(int)
@@ -43,7 +47,7 @@ class Ball(pygame.sprite.Sprite):
         self.speed = speed
         self.pos = vec2d(pos_init)
         self.pos_before = vec2d(pos_init)
-        self.vel = vec2d((speed, (np.around(self.rng.random_sample())*2.0 -1) * speed))
+        self.vel = vec2d((speed, -1 * speed))
 
         self.SCREEN_HEIGHT = SCREEN_HEIGHT
         self.SCREEN_WIDTH = SCREEN_WIDTH
@@ -120,13 +124,14 @@ class Ball(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
 
     def __init__(self, speed, rect_width, rect_height,
-                 pos_init, SCREEN_WIDTH, SCREEN_HEIGHT):
+                 pos_init, SCREEN_WIDTH, SCREEN_HEIGHT, color):
 
         pygame.sprite.Sprite.__init__(self)
 
         self.speed = speed
         self.pos = vec2d(pos_init)
         self.vel = vec2d((0, 0))
+        self.color = color
 
         self.rect_height = rect_height
         self.rect_width = rect_width
@@ -139,7 +144,7 @@ class Player(pygame.sprite.Sprite):
 
         pygame.draw.rect(
             image,
-            (255, 255, 255),
+            self.color,
             (0, 0, rect_width, rect_height),
             0
         )
@@ -209,8 +214,8 @@ class Pong(PyGameWrapper):
     ball_speed_ratio: float (default: 0.75)
         Speed of ball (useful for curriculum learning)
     """
-
-    def __init__(self, width=WIDTH, height=HEIGHT, cpu_speed_ratio=0.6, players_speed_ratio = 0.4, ball_speed_ratio=0.95,  MAX_SCORE=21):
+    metadata = {'render.modes': ['rgb_array']}
+    def __init__(self, width=WIDTH, height=HEIGHT, cpu_speed_ratio=0.4, players_speed_ratio = 0.4, ball_speed_ratio=0.75,  MAX_SCORE=11):
 
         """actions = {
             "up": K_w,
@@ -235,11 +240,11 @@ class Pong(PyGameWrapper):
             "cpu": 0.0
         }
         self.rewards ={
-        "positive":1.0,
+        "positive":2.0,
         "negative":-1.0,
         "win": 10.0,
         "loss":-10,
-        "tick":.0001
+        "tick":.001
         }
 
         super().__init__(WIDTH, HEIGHT, FPS, True, True)
@@ -263,11 +268,11 @@ class Pong(PyGameWrapper):
         }
 
         self.rewards ={
-        "positive":1.0,
+        "positive":2.0,
         "negative":-1.0,
         "win": 10.0,
         "loss":-10,
-        "tick":.00001
+        "tick":.001
         }
 
         self.score_sum = 0.0
@@ -286,7 +291,8 @@ class Pong(PyGameWrapper):
             self.paddle_height,
             (self.paddle_dist_to_wall, self.height / 2),
             self.width,
-            self.height)
+            self.height,
+            BLUE)
 
         self.cpuPlayer = Player(
             self.cpu_speed_ratio * self.height,
@@ -294,7 +300,8 @@ class Pong(PyGameWrapper):
             self.paddle_height,
             (self.width - self.paddle_dist_to_wall, self.height / 2),
             self.width,
-            self.height)
+            self.height,
+            RED)
 
         self.players_group = pygame.sprite.Group()
         self.players_group.add(self.agentPlayer)
@@ -400,7 +407,7 @@ class Pong(PyGameWrapper):
 
         self.players_group.draw(self.screen)
         self.ball_group.draw(self.screen)
-
+        self.show_stats()
         reward = self.getScore() - prev_score
         obs = np.fliplr(np.rot90(self.getScreenRGB(),3))
 
@@ -420,6 +427,12 @@ class Pong(PyGameWrapper):
     def getScore(self):
         return self.score_sum
 
+    def show_stats(self):
+        if self.font:
+            font_surface = self.font.render("CPU: " + str(self.score_counts['cpu']), False, WHITE)
+            self.screen.blit(font_surface, (355,5))
+            font_surface = self.font.render("Agent: " + str(self.score_counts['agent']), False, WHITE)
+            self.screen.blit(font_surface, (15,5))
 
     def reset(self):
         self.startState()
