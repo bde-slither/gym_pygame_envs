@@ -12,3 +12,7 @@ register(
     id='ping_pong_multi-v0',
     entry_point='gym_multi_envs.envs:PongMultiAgent',
 )
+register(
+    id='snake-v0',
+    entry_point='gym_multi_envs.envs:SnakeGame',
+)
