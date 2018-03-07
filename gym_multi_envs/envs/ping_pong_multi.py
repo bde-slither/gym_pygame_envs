@@ -184,7 +184,7 @@ class PongMultiAgent(PyGameWrapper):
 
     def step(self, actions):
 
-        prev_score = self.score_sum
+        prev_score = list(self.score_sum)
 
         done = [False, False]
         rewards = [0.0,0.0]
