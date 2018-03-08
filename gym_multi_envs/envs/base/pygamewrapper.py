@@ -1,5 +1,6 @@
 """This PyGame wrapper for openAI gym is modified version of pygame wrapper
 from PLE repo: https://github.com/ntasfi/PyGame-Learning-Environment"""
+import os
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
@@ -8,6 +9,7 @@ import pygame
 import numpy as np
 from pygame.constants import KEYDOWN, KEYUP, K_F15
 
+os.environ["SDL_VIDEODRIVER"] = "X11"
 
 class PyGameWrapper(gym.Env):
     """PyGameWrapper  class
@@ -59,6 +61,7 @@ class PyGameWrapper(gym.Env):
         self.seed()
         # setup PyGame
         pygame.init()
+        pygame.display.init()
 
 
         # initialize the Game, raise error if not implemented.
