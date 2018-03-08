@@ -412,6 +412,7 @@ class Pong(PyGameWrapper):
         #self.ball_group.draw(self.screen)
         self.show_stats()
         reward = self.getScore() - prev_score
+        pygame.display.update()
         obs = np.fliplr(np.rot90(self.getScreenRGB(),3))
 
         return obs, reward, done, self.getGameState()

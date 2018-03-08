@@ -244,7 +244,7 @@ class PongMultiAgent(PyGameWrapper):
         self.show_stats()
         for i in range(len(prev_score)):
             rewards[i] = self.getScore()[i] - prev_score[i]
-
+        pygame.display.update()
         ob = np.fliplr(np.rot90(self.getScreenRGB(),3))
 
         return ob, rewards, done, self.getGameState()
