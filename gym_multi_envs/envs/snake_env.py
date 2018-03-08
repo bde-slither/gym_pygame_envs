@@ -13,7 +13,7 @@ from gym.utils import seeding
 #create surface object
 WIDTH = 720
 HEIGHT = 480
-FPS = 30
+FPS = 60
 
 SCREEN_SIZE   = WIDTH,HEIGHT
 
@@ -91,8 +91,6 @@ class snakeClass(object):
         if self.body[-1].rect.colliderect(food.rect):
             food.newPos()
             self.score += 1
-            if self.demo:
-                del self.body[0]
         else:
             del self.body[0]
 
@@ -171,6 +169,7 @@ class SnakeGame(base.PyGameWrapper):
         reward = 0
         ob = None
         super().step(action)
+        self.screen.fill(BLACK)
         self.food.draw(self.screen)
         self.snake.update(self.screen, self.food)
         self.show_stats()
