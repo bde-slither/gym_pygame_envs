@@ -34,7 +34,7 @@ if __name__ == '__main__':
     # will be namespaced). You can also dump to a tempdir if you'd
     # like: tempfile.mkdtemp().
     outdir = '/tmp/random-agent-results'
-    #env = MultiMonitor(env, directory=outdir, force=True)
+    env = MultiMonitor(env, directory=outdir, force=True)
     env.seed(123)
     agents =[]
     for action_space in env.action_space.spaces:
@@ -52,7 +52,6 @@ if __name__ == '__main__':
             for i in range(n_agents):
                 actions+=(agents[i].act(ob, reward, done),)
             ob, reward, done, _ = env.step(actions)
-            print (reward)
             if done[0]:
                 break
             # Note there's no env.render() here. But the environment still can open window and

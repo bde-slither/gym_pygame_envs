@@ -104,7 +104,8 @@ class PongMultiAgent(PyGameWrapper):
             self.np_random,
             (self.width / 2, self.height / 2),
             self.width,
-            self.height
+            self.height,
+            WHITE
         )
 
         self.agent1Player = Player(
@@ -125,12 +126,6 @@ class PongMultiAgent(PyGameWrapper):
             self.height,
             RED)
         self.agents = [self.agent1Player, self.agent2Player]
-        self.players_group = pygame.sprite.Group()
-        self.players_group.add(self.agent1Player)
-        self.players_group.add(self.agent2Player)
-
-        self.ball_group = pygame.sprite.Group()
-        self.ball_group.add(self.ball)
 
     def pygame_event_handler(self):
         for i, event in enumerate(pygame.event.get()):
@@ -243,8 +238,9 @@ class PongMultiAgent(PyGameWrapper):
             self.agent1Player.update(self.a1_dy, dt)
             self.agent2Player.update(self.a2_dy, dt)
 
-        self.players_group.draw(self.screen)
-        self.ball_group.draw(self.screen)
+        self.ball.draw(self.screen)
+        self.agent1Player.draw(self.screen)
+        self.agent2Player.draw(self.screen)
         self.show_stats()
         for i in range(len(prev_score)):
             rewards[i] = self.getScore()[i] - prev_score[i]
