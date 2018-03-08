@@ -99,9 +99,9 @@ class PyGameWrapper(gym.Env):
         Decides if the screen will be drawn too
         """
         if self.screen == None or self.clock==None:
-                self.screen = pygame.display.set_mode(self.getScreenDims(), 0, 32)
+                self.screen = pygame.display.set_mode(self.getScreenDims(),pygame.DOUBLEBUF , 32)
                 self.clock = pygame.time.Clock()
-        pygame.display.update()
+        pygame.display.flip()
 
     def tick(self, fps):
         """

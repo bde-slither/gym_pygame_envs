@@ -22,7 +22,7 @@ from gym_multi_envs.envs.base import vec2d, PyGameWrapper
 
 WIDTH = 720
 HEIGHT = 480
-FPS = 60
+FPS = 30
 
 BLACK = (0,0,0)
 WHITE = (255,255,255)
@@ -35,14 +35,13 @@ def percent_round_int(percent, x):
 
 SCREEN_SIZE   = WIDTH,HEIGHT
 
-class Ball(pygame.sprite.Sprite):
+class Ball(object):
 
     def __init__(self, radius, speed, rng,
-                 pos_init, SCREEN_WIDTH, SCREEN_HEIGHT):
-
-        pygame.sprite.Sprite.__init__(self)
+                 pos_init, SCREEN_WIDTH, SCREEN_HEIGHT,color):
 
         self.rng = rng
+        self.color =color
         self.radius = radius
         self.speed = speed
         self.pos = vec2d(pos_init)
@@ -52,11 +51,11 @@ class Ball(pygame.sprite.Sprite):
         self.SCREEN_HEIGHT = SCREEN_HEIGHT
         self.SCREEN_WIDTH = SCREEN_WIDTH
 
-        image = pygame.Surface((radius * 2, radius * 2))
-        image.fill((0, 0, 0, 0))
-        image.set_colorkey((0, 0, 0))
+        #image = pygame.Surface((radius * 2, radius * 2))
+        #image.fill((0, 0, 0, 0))
+        #image.set_colorkey((0, 0, 0))
 
-        pygame.draw.circle(
+        """image = pygame.draw.circle(
             image,
             (255, 255, 255),
             (radius, radius),
@@ -64,8 +63,8 @@ class Ball(pygame.sprite.Sprite):
             0
         )
 
-        self.image = image
-        self.rect = self.image.get_rect()
+        self.image = image"""
+        self.rect = pygame.Rect(0,0,radius, radius)
         self.rect.center = pos_init
 
     def line_intersection(self, p0_x, p0_y, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y):
@@ -119,14 +118,13 @@ class Ball(pygame.sprite.Sprite):
         self.pos_before.y = self.pos.y
 
         self.rect.center = (self.pos.x, self.pos.y)
-
-
-class Player(pygame.sprite.Sprite):
+    def draw(self,screen):
+        pygame.draw.circle(screen, self.color, self.rect.center, self.rect.height)
+class Player(object):
 
     def __init__(self, speed, rect_width, rect_height,
                  pos_init, SCREEN_WIDTH, SCREEN_HEIGHT, color):
 
-        pygame.sprite.Sprite.__init__(self)
 
         self.speed = speed
         self.pos = vec2d(pos_init)
@@ -150,7 +148,7 @@ class Player(pygame.sprite.Sprite):
         )
 
         self.image = image
-        self.rect = self.image.get_rect()
+        self.rect = pygame.Rect(0, 0, rect_width, rect_height)
         self.rect.center = pos_init
 
     def update(self, dy, dt):
@@ -191,7 +189,8 @@ class Player(pygame.sprite.Sprite):
 
         self.pos.y += dy * dt
         self.rect.center = (self.pos.x, self.pos.y)
-
+    def draw(self,screen):
+        pygame.draw.rect(screen, self.color, self.rect)
 
 class Pong(PyGameWrapper):
     """
@@ -282,7 +281,8 @@ class Pong(PyGameWrapper):
             self.np_random,
             (self.width / 2, self.height / 2),
             self.width,
-            self.height
+            self.height,
+            WHITE
         )
 
         self.agentPlayer = Player(
@@ -303,12 +303,12 @@ class Pong(PyGameWrapper):
             self.height,
             RED)
 
-        self.players_group = pygame.sprite.Group()
-        self.players_group.add(self.agentPlayer)
-        self.players_group.add(self.cpuPlayer)
+        #self.players_group = pygame.sprite.Group()
+        #self.players_group.add(self.agentPlayer)
+        #self.players_group.add(self.cpuPlayer)
 
-        self.ball_group = pygame.sprite.Group()
-        self.ball_group.add(self.ball)
+        #self.ball_group = pygame.sprite.Group()
+        #self.ball_group.add(self.ball)
 
     def pygame_event_handler(self):
         self.dy = 0
@@ -364,7 +364,7 @@ class Pong(PyGameWrapper):
 
         dt = self.dt/1000.0
 
-        self.screen.fill((0, 0, 0))
+        self.screen.fill(BLACK)
 
         self.agentPlayer.speed = self.players_speed_ratio * self.height
         self.cpuPlayer.speed = self.cpu_speed_ratio * self.height
@@ -405,8 +405,11 @@ class Pong(PyGameWrapper):
             self.agentPlayer.update(self.dy, dt)
             self.cpuPlayer.updateCpu(self.ball, dt)
 
-        self.players_group.draw(self.screen)
-        self.ball_group.draw(self.screen)
+        self.ball.draw(self.screen)
+        self.agentPlayer.draw(self.screen)
+        self.cpuPlayer.draw(self.screen)
+        #self.players_group.draw(self.screen)
+        #self.ball_group.draw(self.screen)
         self.show_stats()
         reward = self.getScore() - prev_score
         obs = np.fliplr(np.rot90(self.getScreenRGB(),3))
