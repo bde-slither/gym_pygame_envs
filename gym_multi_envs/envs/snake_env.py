@@ -13,7 +13,7 @@ from gym.utils import seeding
 #create surface object
 WIDTH = 720
 HEIGHT = 480
-FPS = 60
+FPS = 1000
 
 SCREEN_SIZE   = WIDTH,HEIGHT
 
@@ -130,7 +130,7 @@ class snakeClass(object):
         self.checkCollision(food)
         #update snake on screen
         for i in range(len(self.body)):
-            color = self.color+(i*10,)
+            color = self.color
             self.body[i].draw(surface, color)
 
 class SnakeGame(base.PyGameWrapper):
@@ -138,7 +138,7 @@ class SnakeGame(base.PyGameWrapper):
     metadata = {'render.modes': ['human', 'rgb_array']}
     def __init__(self, width=WIDTH, height=HEIGHT):
 
-        super().__init__(WIDTH, HEIGHT, fps=FPS)
+        super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
         if pygame.font:
             self.font = pygame.font.Font(None, 30)
         else:
