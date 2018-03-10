@@ -29,6 +29,8 @@ GOLD = (255,255,153)
 PURPLE = (147,112,219)
 GREEN = (0,255,0)
 
+FOOD_COUNT = 20
+
 class foodClass(pygame.sprite.Sprite):
 
     def __init__(self,rng):
@@ -88,10 +90,13 @@ class snakeClass(object):
             self.dead = True
 
         #checks if collision with food
-        if self.body[-1].rect.colliderect(food.rect):
-            food.newPos()
-            self.score += 1
-        else:
+        hasCollided = False
+        for f in food:
+            if self.body[-1].rect.colliderect(f.rect):
+                f.newPos()
+                self.score += 1
+                hasCollided = True
+        if not hasCollided:
             del self.body[0]
 
         #checks if collision with own body
@@ -153,10 +158,13 @@ class SnakeGame(base.PyGameWrapper):
 
     def startState(self):
         self.snake = snakeClass(CYAN)
-        self.food = foodClass(self.np_random)
+        self.food = []
+        for i in range(0, FOOD_COUNT):
+            self.food.append(foodClass(self.np_random))
         self.score = 0
         self.snake.resetValues()
-        self.food.newPos()
+        for f in self.food:
+            f.newPos()
 
     def show_stats(self):
         if self.font:
@@ -170,7 +178,8 @@ class SnakeGame(base.PyGameWrapper):
         ob = None
         super().step(action)
         self.screen.fill(BLACK)
-        self.food.draw(self.screen)
+        for f in self.food:
+            f.draw(self.screen)
         self.snake.update(self.screen, self.food)
         self.show_stats()
 
