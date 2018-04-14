@@ -11,11 +11,11 @@ from gym import error, spaces, utils
 from gym.utils import seeding
 
 #create surface object
-WIDTH = 720
-HEIGHT = 480
-FPS = 1000
+WIDTH = 0
+HEIGHT = 0
+FPS = 0
 
-SCREEN_SIZE   = WIDTH,HEIGHT
+SCREEN_SIZE   = 0
 
 #colours
 GREEN = (0,255,0)
@@ -42,6 +42,9 @@ class foodClass(pygame.sprite.Sprite):
         self.newPos()
 
     def newPos(self):
+        global WIDTH
+        global HEIGHT
+
         #sets new position of food
         self.possiblePosX = range(20, WIDTH-20, 20)
         self.possiblePosY = range(20, HEIGHT-20, 20)
@@ -63,7 +66,7 @@ class blockClass(object):
         pygame.draw.rect(screen, color, self.rect)
 
 class snakeClass(object):
-
+    
     def __init__(self, color):
         #creates snake object variables
         self.direction = 270
@@ -79,6 +82,9 @@ class snakeClass(object):
             count += 20
 
     def checkCollision(self, food):
+        global WIDTH
+        global HEIGHT
+
         #checks if collision with wall
         if self.body[-1].rect.x > WIDTH:
             self.dead = True
@@ -139,12 +145,29 @@ class snakeClass(object):
             color = self.color
             self.body[i].draw(surface, color)
 
-class SnakeGame(base.PyGameWrapper):
+class SnakeGameV2(base.PyGameWrapper):
     """ Main game class that implements gym functions to control the game."""
     metadata = {'render.modes': ['human', 'rgb_array']}
-    def __init__(self, width=WIDTH, height=HEIGHT):
+    def __init__(self, **kwargs):
 
-        super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
+        print (kwargs)
+        #for key, value in kwargs.iteritems():
+        #    print ("%s = %s" % (key, value))
+
+        global WIDTH
+        global HEIGHT
+        global FPS
+        global SCREEN_SIZE
+
+        WIDTH = kwargs['WIDTH']
+        HEIGHT = kwargs['HEIGHT']
+        FPS = kwargs['FPS']
+
+        SCREEN_SIZE = WIDTH * HEIGHT
+
+        #super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
+        super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=False)
+        
         if pygame.font:
             self.font = pygame.font.Font(None, 30)
         else:

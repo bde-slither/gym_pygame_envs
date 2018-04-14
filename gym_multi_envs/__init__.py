@@ -16,3 +16,13 @@ register(
     id='snake-v0',
     entry_point='gym_multi_envs.envs:SnakeGame',
 )
+register(
+    id='snake-v2',
+    entry_point='gym_multi_envs.envs:SnakeGameV2',
+    kwargs={'WIDTH': 720, 'HEIGHT': 480, 'FPS': 200}
+)
+register(
+    id='snake-window-v2',
+    entry_point='gym_multi_envs.envs:SnakeGameV2',
+    kwargs={'WIDTH': 2000, 'HEIGHT': 2000, 'FPS': 200}
+)

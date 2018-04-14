@@ -17,7 +17,8 @@ class RandomAgent(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('env_id', nargs='?', default='ball_paddle-v0', help='Select the environment to run')
+    #parser.add_argument('env_id', nargs='?', default='ball_paddle-v0', help='Select the environment to run')
+    parser.add_argument('--env_id', nargs='?', default='snake-window-v2', help='Select the environment to run')
     parser.add_argument('--obs_type', nargs='?', default='Image', help='Select observation type.')
     args = parser.parse_args()
 
@@ -33,11 +34,11 @@ if __name__ == '__main__':
     # will be namespaced). You can also dump to a tempdir if you'd
     # like: tempfile.mkdtemp().
     outdir = '/tmp/random-agent-results'
-    env = wrappers.Monitor(env, directory=outdir, force=True)
+    env = wrappers.Monitor(env, directory=outdir, force=True )
     env.seed(123)
     agent = RandomAgent(env.action_space)
 
-    episode_count = 1
+    episode_count = 100
     reward = 0
     done = False
 

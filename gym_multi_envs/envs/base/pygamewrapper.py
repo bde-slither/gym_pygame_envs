@@ -4,12 +4,15 @@ import os
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
+from subprocess import call
 
 import pygame
 import numpy as np
 from pygame.constants import KEYDOWN, KEYUP, K_F15
 
-os.environ["SDL_VIDEODRIVER"] = "dummy"
+os.environ["SDL_VIDEODRIVER"] = "directx"
+#os.environ["SDL_VIDEODRIVER"] = "X11"
+#os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 class PyGameWrapper(gym.Env):
     """PyGameWrapper  class
@@ -61,6 +64,7 @@ class PyGameWrapper(gym.Env):
         self.seed()
         # setup PyGame
         pygame.init()
+        call(["python", "--version"])
         pygame.display.init()
 
 
@@ -100,6 +104,7 @@ class PyGameWrapper(gym.Env):
         """
         if self.screen == None or self.clock==None:
                 self.screen = pygame.display.set_mode(self.getScreenDims(),pygame.DOUBLEBUF|pygame.SRCALPHA , 32)
+                self.screen.set_alpha(None)
                 self.clock = pygame.time.Clock()
         pygame.display.flip()
 
