@@ -95,9 +95,14 @@ class PyGameWrapper(gym.Env):
 
         """
 
+        #surf = pygame.display.get_surface()
+        #print ("surf", type(surf))
+        #r = pygame.Rect(0,0,10,10)
+        #subSurf = surf.subsurface((r))
+        #print ("subSurf", type(subSurf))
         return pygame.surfarray.array3d(
             pygame.display.get_surface()).astype(np.uint8)
-
+    
     def _draw_frame(self, draw_screen):
         """
         Decides if the screen will be drawn too

@@ -17,7 +17,7 @@ class RandomAgent(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('env_id', nargs='?', default='ball_paddle-v0', help='Select the environment to run')
+    parser.add_argument('--env_id', nargs='?', default='ball_paddle-v0', help='Select the environment to run')
     parser.add_argument('--obs_type', nargs='?', default='Image', help='Select observation type.')
     args = parser.parse_args()
 
@@ -37,8 +37,8 @@ if __name__ == '__main__':
     env = MultiMonitor(env, directory=outdir, force=True)
     env.seed(123)
     agents =[]
-    for action_space in env.action_space.spaces:
-        agents.append(RandomAgent(action_space))
+    for i in range(0, n_agents):
+        agents.append(RandomAgent(env.action_space))
 
     episode_count = 1
     reward = 0
@@ -52,7 +52,13 @@ if __name__ == '__main__':
             for i in range(n_agents):
                 actions+=(agents[i].act(ob, reward, done),)
             ob, reward, done, _ = env.step(actions)
-            if done[0]:
+            #if done:
+            allDone = True
+            for d in done:
+                if not d:
+                    allDone = False
+                    break             
+            if allDone:
                 break
             # Note there's no env.render() here. But the environment still can open window and
             # render if asked by env.monitor: it calls env.render('rgb_array') to record video.
