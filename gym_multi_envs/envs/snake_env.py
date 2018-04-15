@@ -29,7 +29,7 @@ GOLD = (255,255,153)
 PURPLE = (147,112,219)
 GREEN = (0,255,0)
 
-FOOD_COUNT = 20
+FOOD_COUNT = 5
 
 class foodClass(pygame.sprite.Sprite):
 
