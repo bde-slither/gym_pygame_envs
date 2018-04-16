@@ -19,6 +19,8 @@ SCREEN_SIZE   = 0
 BLOCK_WIDTH = 5
 INIT_OFFSET = 20
 SNAKE_COUNT = 0
+MAX_SCORE = 0
+MAX_STEP = 0
 
 #colours
 GREEN = (0,255,0)
@@ -227,19 +229,24 @@ class SnakeGameV2(base.PyGameWrapper):
         print (kwargs)
         #for key, value in kwargs.iteritems():
         #    print ("%s = %s" % (key, value))
-
+        self.stepCount = 0
         global WIDTH
         global HEIGHT
         global FPS
         global SCREEN_SIZE
         global SNAKE_COUNT
         global FOOD_COUNT
-        
+        global MAX_SCORE
+        global MAX_STEP
+
         WIDTH = kwargs['WIDTH']
         HEIGHT = kwargs['HEIGHT']
         FPS = kwargs['FPS']
         SNAKE_COUNT = kwargs['SNAKE_COUNT']
         FOOD_COUNT = kwargs['FOOD_COUNT']
+        MAX_SCORE = kwargs['MAX_SCORE']
+        MAX_STEP = kwargs['MAX_STEP']
+
         self.n_agents = SNAKE_COUNT
 
         SCREEN_SIZE = WIDTH * HEIGHT
@@ -332,6 +339,10 @@ class SnakeGameV2(base.PyGameWrapper):
         for f in self.food:
             f.draw(self.screen)
         
+        global MAX_SCORE
+        global MAX_STEP
+
+        doneOverride = False
         done = []
         reward = []
         for idx, s in enumerate(self.snake):
@@ -339,6 +350,11 @@ class SnakeGameV2(base.PyGameWrapper):
             reward.append(s.score - s.prevScore + 0.001)
             s.prevScore = s.score
             done.append(s.dead)
+            if s.score == MAX_SCORE:
+                doneOverride = True
+
+        if self.stepCount == MAX_STEP:
+            doneOverride = True
 
         self.show_stats()
         #print ('out', done)
@@ -349,26 +365,27 @@ class SnakeGameV2(base.PyGameWrapper):
 
         ob = []
         for idx, s in enumerate(self.snake):
-            #print (s.cropLX, s.cropLY, s.cropLX + CROP_WIDTH, s.cropLY + CROP_HEIGHT)
-            subSurface = surface.subsurface(pygame.Rect(s.cropLX, s.cropLY, CROP_WIDTH, CROP_HEIGHT))
-            #pygame.image.save(subSurface, 'sn_' + str(idx) + '.png')
-            
-            screenRGB = pygame.surfarray.array3d(subSurface).astype(np.uint8)
-            '''
             for i, sn in enumerate(self.snake):
-                if idx != i:
-                    for b in sn.body:
-                        x = b.rect.x
-                        y = b.rect.y
-                        for bx in range(BLOCK_WIDTH):
-                            for by in range(BLOCK_WIDTH):
-                                screenRGB[x + bx][y + by][0] = 255
-                                screenRGB[x + bx][y + by][1] = 0
-                                screenRGB[x + bx][y + by][2] = 0
-            '''
+                #update snake on screen
+                if idx == i:
+                    for b in range(len(sn.body)):
+                        color = sn.color
+                        sn.body[b].draw(surface, color)
+                else:
+                    for b in range(len(sn.body)):
+                        color = RED
+                        sn.body[b].draw(surface, color)
+            
+            if self.display_screen == True:
+                self._draw_frame(self.display_screen)
+
+            #print (s.cropLX, s.cropLY, s.cropLX + CROP_WIDTH, s.cropLY + CROP_HEIGHT)
+            subSurface = pygame.display.get_surface().subsurface(pygame.Rect(s.cropLX, s.cropLY, CROP_WIDTH, CROP_HEIGHT))
+            #pygame.image.save(subSurface, 'sn_' + str(idx) + '_' + str(self.stepCount) + '.png')
+            screenRGB = pygame.surfarray.array3d(subSurface).astype(np.uint8)
             img = np.fliplr(np.rot90(screenRGB,3))
             ob.append(img)
-
+        self.stepCount += 1
         return ob, reward, done, {}
 
     def reset(self):

@@ -43,7 +43,7 @@ if __name__ == '__main__':
     episode_count = 1
     reward = 0
     done = False
-
+    #stepCount = 0
     for i in range(episode_count):
         ob = env.reset()
         while True:
@@ -60,6 +60,9 @@ if __name__ == '__main__':
                     break             
             if allDone:
                 break
+            #if stepCount == 1:
+            #    exit()
+            #stepCount += 1
             # Note there's no env.render() here. But the environment still can open window and
             # render if asked by env.monitor: it calls env.render('rgb_array') to record video.
             # Video is not recorded every episode, see capped_cubic_video_schedule for details.
