@@ -33,6 +33,8 @@ PURPLE = (147,112,219)
 GREEN = (0,255,0)
 
 FOOD_COUNT = 10
+SNAKE_LENGTH = 10
+
 CROP_OFFSET = 10
 CROP_WIDTH = 180
 CROP_HEIGHT = 120
@@ -88,7 +90,7 @@ class snakeClass(object):
         #creates initial snake body
         self.resetValues()
 
-    def checkCollision(self, food):
+    def checkCollision(self, food, idx, snake):
         if self.dead:
             return
 
@@ -112,6 +114,7 @@ class snakeClass(object):
                 f.newPos()
                 self.score += 1
                 hasCollided = True
+        
         if not hasCollided:
             del self.body[0]
 
@@ -120,6 +123,15 @@ class snakeClass(object):
             if self.body[-1].rect.colliderect(self.body[i]):
                 self.dead = True
         
+        for i, s in enumerate(snake):
+            if i != idx:
+                for b in s.body:
+                    if self.body[-1].rect.colliderect(b):
+                        self.dead = True
+                        break
+                if self.dead:
+                    break
+
         if self.dead:
             self.body = []
 
@@ -136,7 +148,7 @@ class snakeClass(object):
         startY = int(random.random() * (HEIGHT - 2 * INIT_OFFSET) + INIT_OFFSET)
         
         count = 0
-        for i in range(10):
+        for i in range(SNAKE_LENGTH):
             self.body.append(blockClass(startX + count, startY, BLOCK_WIDTH))
             count += BLOCK_WIDTH
 
@@ -144,7 +156,7 @@ class snakeClass(object):
         self.cropLY = self.body[-1].rect.y
         self.reAlignCropXY()
         
-    def update(self, surface, food):
+    def update(self, surface, food, idx, snake):
         if self.dead:
             return
         
@@ -163,7 +175,7 @@ class snakeClass(object):
         elif self.direction == 270:
             self.body.append(blockClass(x_frontPos + BLOCK_WIDTH, y_frontPos, BLOCK_WIDTH))
         #check snake collisions
-        self.checkCollision(food)
+        self.checkCollision(food, idx, snake)
         if self.dead:
             return
         
@@ -320,8 +332,8 @@ class SnakeGameV2(base.PyGameWrapper):
         
         done = []
         reward = []
-        for s in self.snake:
-            s.update(self.screen, self.food)
+        for idx, s in enumerate(self.snake):
+            s.update(self.screen, self.food, idx, self.snake)
             reward.append(s.score - s.prevScore + 0.001)
             s.prevScore = s.score
             done.append(s.dead)
@@ -338,7 +350,20 @@ class SnakeGameV2(base.PyGameWrapper):
             #print (s.cropLX, s.cropLY, s.cropLX + CROP_WIDTH, s.cropLY + CROP_HEIGHT)
             subSurface = surface.subsurface(pygame.Rect(s.cropLX, s.cropLY, CROP_WIDTH, CROP_HEIGHT))
             #pygame.image.save(subSurface, 'sn_' + str(idx) + '.png')
+            
             screenRGB = pygame.surfarray.array3d(subSurface).astype(np.uint8)
+            '''
+            for i, sn in enumerate(self.snake):
+                if idx != i:
+                    for b in sn.body:
+                        x = b.rect.x
+                        y = b.rect.y
+                        for bx in range(BLOCK_WIDTH):
+                            for by in range(BLOCK_WIDTH):
+                                screenRGB[x + bx][y + by][0] = 255
+                                screenRGB[x + bx][y + by][1] = 0
+                                screenRGB[x + bx][y + by][2] = 0
+            '''
             img = np.fliplr(np.rot90(screenRGB,3))
             ob.append(img)
 
