@@ -233,11 +233,13 @@ class SnakeGameV2(base.PyGameWrapper):
         global FPS
         global SCREEN_SIZE
         global SNAKE_COUNT
-
+        global FOOD_COUNT
+        
         WIDTH = kwargs['WIDTH']
         HEIGHT = kwargs['HEIGHT']
         FPS = kwargs['FPS']
         SNAKE_COUNT = kwargs['SNAKE_COUNT']
+        FOOD_COUNT = kwargs['FOOD_COUNT']
         self.n_agents = SNAKE_COUNT
 
         SCREEN_SIZE = WIDTH * HEIGHT
