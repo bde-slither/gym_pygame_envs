@@ -76,7 +76,7 @@ class blockClass(object):
         pygame.draw.rect(screen, color, self.rect)
 
 class snakeClass(object):
-    
+
     def __init__(self, color):
         #creates snake object variables
         self.direction = 270
@@ -116,7 +116,7 @@ class snakeClass(object):
                 f.newPos()
                 self.score += 1
                 hasCollided = True
-        
+
         if not hasCollided:
             del self.body[0]
 
@@ -124,7 +124,7 @@ class snakeClass(object):
         for i in range(len(self.body[:-1])):
             if self.body[-1].rect.colliderect(self.body[i]):
                 self.dead = True
-        
+
         for i, s in enumerate(snake):
             if i != idx:
                 for b in s.body:
@@ -148,7 +148,7 @@ class snakeClass(object):
 
         startX = int(random.random() * (WIDTH - 2 * INIT_OFFSET) + INIT_OFFSET)
         startY = int(random.random() * (HEIGHT - 2 * INIT_OFFSET) + INIT_OFFSET)
-        
+
         count = 0
         for i in range(SNAKE_LENGTH):
             self.body.append(blockClass(startX + count, startY, BLOCK_WIDTH))
@@ -157,11 +157,11 @@ class snakeClass(object):
         self.cropLX = self.body[-1].rect.x
         self.cropLY = self.body[-1].rect.y
         self.reAlignCropXY()
-        
+
     def update(self, surface, food, idx, snake):
         if self.dead:
             return
-        
+
         #print (len(self.body), len(food))
         #get coordinates of front position of snake
         x_frontPos = self.body[-1].rect.x
@@ -180,12 +180,12 @@ class snakeClass(object):
         self.checkCollision(food, idx, snake)
         if self.dead:
             return
-        
+
         #update snake on screen
         for i in range(len(self.body)):
             color = self.color
             self.body[i].draw(surface, color)
-        
+
         global WIDTH
         global HEIGHT
         global CROP_WIDTH
@@ -213,7 +213,7 @@ class snakeClass(object):
             self.cropLY = 0
         elif self.cropLY >= HEIGHT:
             self.cropLY = HEIGHT - CROP_HEIGHT
-        
+
         if self.cropLX + CROP_WIDTH >= WIDTH:
             self.cropLX -= (self.cropLX + CROP_WIDTH - WIDTH)
         if self.cropLY + CROP_HEIGHT >= HEIGHT:
@@ -253,7 +253,7 @@ class SnakeGameV2(base.PyGameWrapper):
 
         #super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
         super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=False)
-        
+
         if pygame.font:
             self.font = pygame.font.Font(None, 30)
         else:
@@ -271,7 +271,7 @@ class SnakeGameV2(base.PyGameWrapper):
         This method render scenes taken from pygame.
         """
         self._draw_frame(self.display_screen)
-        
+
         subSurface = pygame.display.get_surface().subsurface(pygame.Rect(self.snake[0].cropLX, self.snake[0].cropLY, CROP_WIDTH, CROP_HEIGHT))
         screenRGB = pygame.surfarray.array3d(subSurface).astype(np.uint8)
 
@@ -292,11 +292,11 @@ class SnakeGameV2(base.PyGameWrapper):
             s = snakeClass(CYAN)
             s.resetValues()
             self.snake.append(s)
-        
+
         self.food = []
         for i in range(0, FOOD_COUNT):
             self.food.append(foodClass(self.np_random))
-        
+
         for f in self.food:
             f.newPos()
 
@@ -305,7 +305,7 @@ class SnakeGameV2(base.PyGameWrapper):
             stats = []
             for idx, s in enumerate(self.snake):
                 stats.append('P' + str(idx) + ': ' + str(s.score))
-            
+
             text = self.font.render(' | '.join(stats), True, WHITE)
             self.screen.blit(text, (5,5))
 
@@ -329,7 +329,7 @@ class SnakeGameV2(base.PyGameWrapper):
                         s.direction = 270
             else:
                 raise TypeError("action not in Action space.")
-        
+
         #self.pygame_event_handler()
         if self.display_screen == True:
             self._draw_frame(self.display_screen)
@@ -343,6 +343,7 @@ class SnakeGameV2(base.PyGameWrapper):
         global MAX_STEP
 
         doneOverride = False
+
         done = []
         reward = []
         for idx, s in enumerate(self.snake):
@@ -353,12 +354,29 @@ class SnakeGameV2(base.PyGameWrapper):
             if s.score == MAX_SCORE:
                 doneOverride = True
 
+        self.stepCount += 1
+
+        #print (self.stepCount)
+        
+        #if doneOverride:
+        #    print('maxscore---------------------------')
         if self.stepCount == MAX_STEP:
             doneOverride = True
+            #print('maxstep----------------------------')
 
         self.show_stats()
         #print ('out', done)
-        
+
+        global CROP_HEIGHT
+        global CROP_WIDTH
+
+        ob = self.get_obs()
+        if(SNAKE_COUNT==1):
+            return ob, reward, doneOverride or done[0], {}
+
+        return ob, reward, [doneOverride] if doneOverride else done, {}
+
+    def get_obs(self):
         global CROP_HEIGHT
         global CROP_WIDTH
         surface = pygame.display.get_surface()
@@ -385,14 +403,13 @@ class SnakeGameV2(base.PyGameWrapper):
             screenRGB = pygame.surfarray.array3d(subSurface).astype(np.uint8)
             img = np.fliplr(np.rot90(screenRGB,3))
             ob.append(img)
-        self.stepCount += 1
-        return ob, reward, done, {}
+        
+        return ob
 
     def reset(self):
         super().reset()
         self._draw_frame(self.display_screen)
-        ob = np.fliplr(np.rot90(self.getScreenRGB(),3))
-        return ob
+        return self.get_obs()
 
     def set_pyagme_events(self, action):
         """Convert  gym action space to pygame events."""
@@ -410,7 +427,7 @@ class SnakeGameV2(base.PyGameWrapper):
     def pygame_event_handler(self):
         if len(self.snake) == 0:
             return
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
