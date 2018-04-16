@@ -28,7 +28,8 @@ BLUE = (0,0,255)
 GOLD = (255,255,153)
 PURPLE = (147,112,219)
 GREEN = (0,255,0)
-
+MAX_SCORE = 35
+MAX_STEPS = 2000
 FOOD_COUNT = 5
 
 class foodClass(pygame.sprite.Sprite):
@@ -142,7 +143,7 @@ class SnakeGame(base.PyGameWrapper):
     """ Main game class that implements gym functions to control the game."""
     metadata = {'render.modes': ['human', 'rgb_array']}
     def __init__(self, width=WIDTH, height=HEIGHT):
-
+        self.steps =0
         super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
         if pygame.font:
             self.font = pygame.font.Font(None, 30)
@@ -157,6 +158,7 @@ class SnakeGame(base.PyGameWrapper):
         self.observation_space = spaces.Box(low=0, high=255, shape=(self.screen_width, self.screen_height, 3))
 
     def startState(self):
+        self.steps =0
         self.snake = snakeClass(CYAN)
         self.food = []
         for i in range(0, FOOD_COUNT):
@@ -178,6 +180,7 @@ class SnakeGame(base.PyGameWrapper):
         ob = None
         super().step(action)
         self.screen.fill(BLACK)
+        self.steps +=1
         for f in self.food:
             f.draw(self.screen)
         self.snake.update(self.screen, self.food)
@@ -192,6 +195,8 @@ class SnakeGame(base.PyGameWrapper):
 
         pygame.display.update()
         ob = np.fliplr(np.rot90(self.getScreenRGB(),3))
+        if self.steps>=MAX_STEPS or self.score>=MAX_SCORE:
+            done=True
 
         return ob , reward, done, {}
 
