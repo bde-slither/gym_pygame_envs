@@ -10,8 +10,8 @@ import pygame
 import numpy as np
 from pygame.constants import KEYDOWN, KEYUP, K_F15
 
-os.environ["SDL_VIDEODRIVER"] = "directx"
-#os.environ["SDL_VIDEODRIVER"] = "X11"
+#os.environ["SDL_VIDEODRIVER"] = "directx"
+os.environ["SDL_VIDEODRIVER"] = "X11"
 #os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 class PyGameWrapper(gym.Env):
@@ -102,7 +102,7 @@ class PyGameWrapper(gym.Env):
         #print ("subSurf", type(subSurf))
         return pygame.surfarray.array3d(
             pygame.display.get_surface()).astype(np.uint8)
-    
+
     def _draw_frame(self, draw_screen):
         """
         Decides if the screen will be drawn too
