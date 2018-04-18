@@ -364,7 +364,7 @@ class SnakeGameV2(base.PyGameWrapper):
             doneOverride = True
             #print('maxstep----------------------------')
 
-        #self.show_stats()
+        self.show_stats()
         #print ('out', done)
 
         global CROP_HEIGHT
@@ -374,7 +374,7 @@ class SnakeGameV2(base.PyGameWrapper):
         if(SNAKE_COUNT==1):
             return ob, reward, doneOverride or done[0], {}
 
-        return ob, reward, [doneOverride] if doneOverride else done, {}
+        return ob, reward, [doneOverride,doneOverride] if doneOverride else done, {}
 
     def get_obs(self):
         global CROP_HEIGHT
@@ -408,6 +408,7 @@ class SnakeGameV2(base.PyGameWrapper):
 
     def reset(self):
         super().reset()
+        self.stepCount = 0
         self._draw_frame(self.display_screen)
         return self.get_obs()
 
