@@ -20,6 +20,11 @@ from keras.callbacks import TensorBoard
 from multi_agent_learn.multi_agents import IndieMultiAgent
 from keras.callbacks import History
 
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.3
+set_session(tf.Session(config=config))
 
 from rl.callbacks import TestLogger, TrainEpisodeLogger, TrainIntervalLogger, Visualizer, CallbackList
 INPUT_SHAPE = (84, 84)
@@ -27,13 +32,16 @@ WINDOW_LENGTH = 4
 
 
 class AtariProcessor(Processor):
-    def process_observation(self, observation):
-        assert observation.ndim == 3  # (height, width, channel)
-        img = Image.fromarray(observation)
-        img = img.resize(INPUT_SHAPE).convert('L')  # resize and convert to grayscale
-        processed_observation = np.array(img)
-        assert processed_observation.shape == INPUT_SHAPE
-        return processed_observation.astype('uint8')  # saves storage in experience memory
+    def process_observation(self, observations):
+        obs = []
+        for observation in observations:
+            assert observation.ndim == 3  # (height, width, channel)
+            img = Image.fromarray(observation)
+            img = img.resize(INPUT_SHAPE).convert('L')  # resize and convert to grayscale
+            processed_observation = np.array(img)
+            assert processed_observation.shape == INPUT_SHAPE
+            obs.append(processed_observation.astype('uint8'))
+        return obs[0]  # saves storage in experience memory
 
     def process_state_batch(self, batch):
         # We could perform this processing step in `process_observation`. In this case, however,
@@ -42,8 +50,11 @@ class AtariProcessor(Processor):
         processed_batch = batch.astype('float32') / 255.
         return processed_batch
 
-    def process_reward(self, reward):
-        return np.clip(reward[idx], -1., 1.)
+    def process_reward(self, rewards):
+        r =[]
+        for reward in rewards:
+            r.append(np.clip(reward, -1., 1.))
+        return r
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', choices=['train', 'test'], default='train')
@@ -63,7 +74,7 @@ nb_agents = env.n_agents
 agents = []
 
 for idx in range(nb_agents):
-    nb_actions = env.action_space.spaces[idx].n
+    nb_actions = env.action_space.n
     # Next, we build our model. We use the same model that was described by Mnih et al. (2015).
     input_shape = (WINDOW_LENGTH,) + INPUT_SHAPE
     model = Sequential()
@@ -99,8 +110,8 @@ for idx in range(nb_agents):
     # the agent initially explores the environment (high eps) and then gradually sticks to what it knows
     # (low eps). We also set a dedicated eps value that is used during testing. Note that we set it to 0.05
     # so that the agent still performs some random actions. This ensures that the agent cannot get stuck.
-    policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., value_min=.1, value_test=.05,
-                                  nb_steps=1000000)
+    policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=0.33, value_min=.1, value_test=.05,
+                                  nb_steps=1500000)
 
     # The trade-off between exploration and exploitation is difficult and an on-going research topic.
     # If you want, you can experiment with the parameters or use a different policy. Another popular one
@@ -108,10 +119,11 @@ for idx in range(nb_agents):
     #policy = BoltzmannQPolicy(tau=1.)
     # Feel free to give it a try!
 
-    dqn = DQNAgent(model=model, nb_actions=nb_actions, policy=policy, memory=memory,
+    dqn = DQNAgent(model=model, nb_actions=nb_actions, policy=policy, memory=memory, batch_size=32,enable_dueling_network=True, dueling_type='avg',
                    processor=processor, nb_steps_warmup=20000, gamma=.99, target_model_update=10000,
                    train_interval=1, delta_clip=1.)
     dqn.compile(Adam(lr=.00025), metrics=['mae'])
+    dqn.load_weights("duelingqn2_snake-v0_weights_3000000.h5f")
     agents.append(dqn)
 
 mdqn = IndieMultiAgent(agents)

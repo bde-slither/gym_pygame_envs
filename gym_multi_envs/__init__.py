@@ -19,7 +19,7 @@ register(
 register(
     id='snake-v2',
     entry_point='gym_multi_envs.envs:SnakeGameV2',
-    kwargs={'WIDTH': 180, 'HEIGHT': 120, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 2, 'FPS': 10, 'MAX_SCORE': 50, 'MAX_STEP': 3000}
+    kwargs={'WIDTH': 180, 'HEIGHT': 120, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 2, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000}
 )
 register(
     id='snake-window-v2',

@@ -251,8 +251,8 @@ class SnakeGameV2(base.PyGameWrapper):
 
         SCREEN_SIZE = WIDTH * HEIGHT
 
-        #super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
-        super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=False)
+        super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
+        #super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=False)
 
         if pygame.font:
             self.font = pygame.font.Font(None, 30)
@@ -364,7 +364,7 @@ class SnakeGameV2(base.PyGameWrapper):
             doneOverride = True
             #print('maxstep----------------------------')
 
-        self.show_stats()
+        #self.show_stats()
         #print ('out', done)
 
         global CROP_HEIGHT

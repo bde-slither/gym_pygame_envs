@@ -126,7 +126,7 @@ class IndieMultiAgent(Agent):
                         for agent in self.agents:
                             callback_multi[agent].on_action_end(action)
 
-                        if True in  done:
+                        if done:
                             warnings.warn('Env ended before {} random steps could be performed at the start. You should probably lower the `nb_max_start_steps` parameter.'.format(nb_random_start_steps))
                             observation = deepcopy(env.reset())
                             if self.processor is not None:
@@ -147,10 +147,9 @@ class IndieMultiAgent(Agent):
                 if self.processor is not None:
                     action = self.processor.process_action(action)
                 reward =[]
-                done =[]
+                done =False
                 for agent in self.agents:
                     reward.append(0.)
-                    done.append(False)
                 accumulated_info = {}
                 for _ in range(action_repetition):
                     for agent in self.agents:
@@ -168,12 +167,11 @@ class IndieMultiAgent(Agent):
                     for agent in self.agents:
                         callback_multi[agent].on_action_end(action)
                     reward = (np.array(reward)+np.array(r)).tolist()
-                    if False in  done:
+                    if done:
                         break
                 if nb_max_episode_steps and episode_step >= nb_max_episode_steps - 1:
                     # Force a terminal state.
-                    for idx, agent in enumerate(self.agents):
-                        done[idx] = True
+                    done = True
                 metrics = self.backward(reward, terminals=done)
                 episode_reward = (np.array(episode_reward)+np.array(reward)).tolist()
                 step_logs={}
@@ -193,16 +191,14 @@ class IndieMultiAgent(Agent):
                 for agent in self.agents:
                     agent.step += 1
 
-                if True in done:
+                if done:
                     # We are in a terminal state but the agent hasn't yet seen it. We therefore
                     # perform one more forward-backward call and simply ignore the action before
                     # resetting the environment. We need to pass in `terminal=False` here since
                     # the *next* state, that is the state of the newly reset environment, is
                     # always non-terminal by convention.
                     self.forward(observation)
-                    done =[]
-                    for agent in self.agents:
-                        done.append(False)
+                    done = False
                     self.backward([0.]*len(self.agents), terminals=done)
 
                     # This episode is finished, report and reset.
@@ -302,7 +298,7 @@ class IndieMultiAgent(Agent):
                 for agent in self.agents:
                     callback_multi[agent].on_action_end(action)
 
-                if True in  done:
+                if done:
                     warnings.warn('Env ended before {} random steps could be performed at the start. You should probably lower the `nb_max_start_steps` parameter.'.format(nb_random_start_steps))
                     observation = deepcopy(env.reset())
                     if self.processor is not None:
@@ -310,10 +306,8 @@ class IndieMultiAgent(Agent):
                     break
 
             # Run the episode until we're done.
-            done =[]
-            for agent in self.agents:
-                done.append(False)
-            while not (True in done):
+            done =False
+            while not (done):
                 for agent in self.agents:
                     callback_multi[agent].on_step_begin(episode_step)
 
@@ -340,11 +334,10 @@ class IndieMultiAgent(Agent):
                         if key not in accumulated_info:
                             accumulated_info[key] = np.zeros_like(value)
                         accumulated_info[key] += value
-                    if False in  done:
+                    if done:
                         break
                 if nb_max_episode_steps and episode_step >= nb_max_episode_steps - 1:
-                    for idx, agent in enumerate(self.agents):
-                        done[idx] = True
+                    done = True
 
                 self.backward(reward, terminals=done)
                 episode_reward = (np.array(episode_reward)+np.array(reward)).tolist()
@@ -372,9 +365,7 @@ class IndieMultiAgent(Agent):
             # the *next* state, that is the state of the newly reset environment, is
             # always non-terminal by convention.
             self.forward(observation)
-            done =[]
-            for agent in self.agents:
-                done.append(False)
+            done = False
             self.backward([0.]*len(self.agents), terminals=done)
 
             # Report end of episode.
@@ -404,7 +395,7 @@ class IndieMultiAgent(Agent):
     def backward(self, rewards, terminals):
         list_metrics = []
         for idx, agent in enumerate(self.agents):
-            list_metrics.append(agent.backward(rewards[idx], terminals[idx]))
+            list_metrics.append(agent.backward(rewards[idx], terminals))
         return list_metrics
 
     def reset_states(self):
