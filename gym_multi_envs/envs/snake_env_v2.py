@@ -344,13 +344,14 @@ class SnakeGameV2(base.PyGameWrapper):
 
         doneOverride = False
 
-        done = []
+        done = True
         reward = []
         for idx, s in enumerate(self.snake):
             s.update(self.screen, self.food, idx, self.snake)
             reward.append(s.score - s.prevScore + 0.001)
             s.prevScore = s.score
-            done.append(s.dead)
+            if not s.dead:
+                done = False
             if s.score == MAX_SCORE:
                 doneOverride = True
 
@@ -358,23 +359,16 @@ class SnakeGameV2(base.PyGameWrapper):
 
         #print (self.stepCount)
         
-        #if doneOverride:
-        #    print('maxscore---------------------------')
         if self.stepCount == MAX_STEP:
             doneOverride = True
-            #print('maxstep----------------------------')
-
+        
         #self.show_stats()
-        #print ('out', done)
-
+        
         global CROP_HEIGHT
         global CROP_WIDTH
 
         ob = self.get_obs()
-        if(SNAKE_COUNT==1):
-            return ob, reward, doneOverride or done[0], {}
-
-        return ob, reward, [doneOverride] if doneOverride else done, {}
+        return ob, reward, doneOverride or done, {}
 
     def get_obs(self):
         global CROP_HEIGHT
@@ -402,12 +396,13 @@ class SnakeGameV2(base.PyGameWrapper):
             #pygame.image.save(subSurface, 'sn_' + str(idx) + '_' + str(self.stepCount) + '.png')
             screenRGB = pygame.surfarray.array3d(subSurface).astype(np.uint8)
             img = np.fliplr(np.rot90(screenRGB,3))
-            ob.append(img)
+            ob.append((img, s.dead))
         
         return ob
 
     def reset(self):
         super().reset()
+        self.stepCount = 0
         self._draw_frame(self.display_screen)
         return self.get_obs()
 
