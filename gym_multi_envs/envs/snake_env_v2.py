@@ -88,6 +88,7 @@ class snakeClass(object):
         self.portals = []
         self.cropLX = 0
         self.cropLY = 0
+        self.killedCount = 0
 
         #creates initial snake body
         self.resetValues()
@@ -130,6 +131,7 @@ class snakeClass(object):
                 for b in s.body:
                     if self.body[-1].rect.colliderect(b):
                         self.dead = True
+                        s.killedCount += 1
                         break
                 if self.dead:
                     break
@@ -313,6 +315,9 @@ class SnakeGameV2(base.PyGameWrapper):
         ob = None
         #super().step(action)
         for idx, s in enumerate(self.snake):
+            #reset killed count before calculating collision
+            s.killedCount = 0
+
             if self.action_space.contains(action[idx]):
                 #self.set_pyagme_events(action)
                 if action[idx] == 1:
@@ -347,8 +352,9 @@ class SnakeGameV2(base.PyGameWrapper):
         done = True
         reward = []
         for idx, s in enumerate(self.snake):
+            #print ("KilledCount: ", s.killedCount)
             s.update(self.screen, self.food, idx, self.snake)
-            reward.append(s.score - s.prevScore + 0.001)
+            reward.append(s.score - s.prevScore + 0.001 + s.killedCount)
             s.prevScore = s.score
             if not s.dead:
                 done = False
