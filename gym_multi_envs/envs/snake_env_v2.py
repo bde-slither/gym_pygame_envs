@@ -89,6 +89,8 @@ class snakeClass(object):
         self.cropLX = 0
         self.cropLY = 0
         self.killedCount =0
+        self.dieCount=0
+	
 
         #creates initial snake body
         self.resetValues()
@@ -131,7 +133,8 @@ class snakeClass(object):
                 for b in s.body:
                     if self.body[-1].rect.colliderect(b):
                         self.dead = True
-                        s.killedCount+=1;
+                        s.killedCount+=1
+                        self.dieCount+=1
                         break
                 if self.dead:
                     break
@@ -240,6 +243,8 @@ class SnakeGameV2(base.PyGameWrapper):
         global FOOD_COUNT
         global MAX_SCORE
         global MAX_STEP
+        global KILL
+        global DIE
 
         WIDTH = kwargs['WIDTH']
         HEIGHT = kwargs['HEIGHT']
@@ -248,13 +253,15 @@ class SnakeGameV2(base.PyGameWrapper):
         FOOD_COUNT = kwargs['FOOD_COUNT']
         MAX_SCORE = kwargs['MAX_SCORE']
         MAX_STEP = kwargs['MAX_STEP']
+        KILL = kwargs['KILL']
+        DIE = kwargs['DIE']
 
         self.n_agents = SNAKE_COUNT
 
         SCREEN_SIZE = WIDTH * HEIGHT
 
-        super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
-        #super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=False)
+        #super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
+        super().__init__(WIDTH, HEIGHT, fps=10,force_fps=False)
 
         if pygame.font:
             self.font = pygame.font.Font(None, 30)
@@ -351,7 +358,7 @@ class SnakeGameV2(base.PyGameWrapper):
         reward = []
         for idx, s in enumerate(self.snake):
             s.update(self.screen, self.food, idx, self.snake)
-            reward.append(s.score - s.prevScore + 0.001+s.killedCount)
+            reward.append(s.score - s.prevScore + 0.001+(s.killedCount)+(s.dieCount))
             s.prevScore = s.score
             done.append(s.dead)
             if s.score == MAX_SCORE:

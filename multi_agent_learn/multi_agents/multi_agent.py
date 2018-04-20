@@ -17,7 +17,6 @@ from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 
 
 class IndieMultiAgent(Agent):
-
     def __init__(self, agents):
         if len(agents)<2:
             raise RuntimeError('you have either one or zero agents. Please use Base keras-rl agents.')
@@ -159,8 +158,6 @@ class IndieMultiAgent(Agent):
                     observation = deepcopy(observation)
                     if self.processor is not None:
                         observation, r, done, info = self.processor.process_step(observation, r, done, info)
-
-
                     for key, value in info.items():
                         if not np.isreal(value):
                             continue
@@ -214,10 +211,11 @@ class IndieMultiAgent(Agent):
                         episode_logs[agent]= {
                             'episode_reward': episode_reward[i],
                             'nb_episode_steps': episode_step,
-                            'nb_steps': self.step,
+                            'nb_steps': agent.step,
                         }
                     for agent in self.agents:
                         callback_multi[agent].on_episode_end(episode, episode_logs[agent])
+
 
                     episode += 1
                     observation = None
@@ -316,6 +314,9 @@ class IndieMultiAgent(Agent):
             done =[]
             for agent in self.agents:
                 done.append(False)
+                agent.step=0
+            episode_step=0
+            self.step=0
             while not (True in done):
                 for agent in self.agents:
                     callback_multi[agent].on_step_begin(episode_step)
