@@ -110,7 +110,7 @@ for idx in range(nb_agents):
     # the agent initially explores the environment (high eps) and then gradually sticks to what it knows
     # (low eps). We also set a dedicated eps value that is used during testing. Note that we set it to 0.05
     # so that the agent still performs some random actions. This ensures that the agent cannot get stuck.
-    policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=0.33, value_min=.1, value_test=.05,
+    policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=0.2, value_min=.1, value_test=.05,
                                   nb_steps=1500000)
 
     # The trade-off between exploration and exploitation is difficult and an on-going research topic.
@@ -123,7 +123,7 @@ for idx in range(nb_agents):
                    processor=processor, nb_steps_warmup=20000, gamma=.99, target_model_update=10000,
                    train_interval=1, delta_clip=1.)
     dqn.compile(Adam(lr=.00025), metrics=['mae'])
-    dqn.load_weights("duelingqn2_snake-v0_weights_3000000.h5f")
+    #dqn.load_weights("duelingqn2_snake-v0_weights_3000000.h5f")
     agents.append(dqn)
 
 mdqn = IndieMultiAgent(agents)
@@ -148,7 +148,8 @@ if args.mode == 'train':
         history=History()
         callbacks += [history]
         callback_multi[agent]=callbacks
-    mdqn.fit(env, callbacks=callback_multi, nb_steps=1510000, log_interval=log_interval)
+    mdqn.load_weights("dqn_snake-v2_weights.h5f")
+    mdqn.fit(env, callbacks=callback_multi, nb_steps=2500000, log_interval=log_interval)
 
     # After training is done, we save the final weights one more time.
     mdqn.save_weights(weights_filename, overwrite=True)
