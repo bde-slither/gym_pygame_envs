@@ -46,3 +46,15 @@ register(
     entry_point='gym_multi_envs.envs:SnakeGameV2',
     kwargs={'WIDTH': 720, 'HEIGHT': 480, 'FOOD_COUNT': 30, 'SNAKE_COUNT': 2, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':2, 'DIE':-2}
 )
+register(
+    id='snake-greedy-v2',
+    entry_point='gym_multi_envs.envs:SnakeGameGreedyV2',
+    #first snake is controlled by rl, second/last is greedy approach
+    kwargs={'WIDTH': 180, 'HEIGHT': 120, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 3, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':0, 'DIE':0}
+)
+register(
+    id='snake-greedy-single-v2',
+    entry_point='gym_multi_envs.envs:SnakeGameGreedySingleV2',
+    #first snake is controlled by rl, second is greedy approach
+    kwargs={'WIDTH': 180, 'HEIGHT': 120, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 2, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':0, 'DIE':0}
+)
