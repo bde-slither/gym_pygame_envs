@@ -11,8 +11,8 @@ import numpy as np
 from pygame.constants import KEYDOWN, KEYUP, K_F15
 
 #os.environ["SDL_VIDEODRIVER"] = "directx"
-os.environ["SDL_VIDEODRIVER"] = "X11"
-#os.environ["SDL_VIDEODRIVER"] = "dummy"
+#os.environ["SDL_VIDEODRIVER"] = "X11"
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 class PyGameWrapper(gym.Env):
     """PyGameWrapper  class

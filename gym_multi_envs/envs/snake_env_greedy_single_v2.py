@@ -259,8 +259,8 @@ class SnakeGameGreedySingleV2(base.PyGameWrapper):
 
         SCREEN_SIZE = WIDTH * HEIGHT
 
-        super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
-        #super().__init__(WIDTH, HEIGHT, fps=10,force_fps=False)
+        #super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
+        super().__init__(WIDTH, HEIGHT, fps=10,force_fps=False)
 
         if pygame.font:
             self.font = pygame.font.Font(None, 30)
@@ -422,7 +422,7 @@ class SnakeGameGreedySingleV2(base.PyGameWrapper):
             s.killedCount = 0
 
             if idx < len(self.snake) - 1:
-                print("Random", idx, s.dead)
+                #print("Random", idx, s.dead)
                 if self.action_space.contains(action):
                     #self.set_pyagme_events(action)
                     if action == 1:
@@ -440,7 +440,7 @@ class SnakeGameGreedySingleV2(base.PyGameWrapper):
                 else:
                     raise TypeError("action not in Action space.")
             else:
-                print("Greedy", idx, s.dead)
+                #print("Greedy", idx, s.dead)
                 s.direction = self.getGreedyDir(s, idx)
 
         #self.pygame_event_handler()
@@ -454,6 +454,8 @@ class SnakeGameGreedySingleV2(base.PyGameWrapper):
         
         global MAX_SCORE
         global MAX_STEP
+        global KILL
+        global DIE
 
         doneOverride = False
 
@@ -462,9 +464,9 @@ class SnakeGameGreedySingleV2(base.PyGameWrapper):
         for idx, s in enumerate(self.snake):
             #print ("KilledCount: ", s.killedCount)
             s.update(self.screen, self.food, idx, self.snake)
-            reward.append(s.score - s.prevScore + 0.001+(s.killedCount)+(s.dieCount))
+            reward.append(s.score - s.prevScore + 0.001+(s.killedCount * KILL)+(s.dieCount * DIE))
             s.prevScore = s.score
-            if not s.dead:
+            if idx == 0 and not s.dead:
                 done = False
             if s.score == MAX_SCORE:
                 doneOverride = True
@@ -476,7 +478,7 @@ class SnakeGameGreedySingleV2(base.PyGameWrapper):
         if self.stepCount == MAX_STEP:
             doneOverride = True
 
-        self.show_stats()
+        #self.show_stats()
         #print ('out', done)
 
         global CROP_HEIGHT
