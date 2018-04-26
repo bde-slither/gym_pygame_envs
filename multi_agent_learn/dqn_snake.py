@@ -53,7 +53,7 @@ class AtariProcessor(Processor):
     def process_reward(self, rewards):
         r =[]
         for reward in rewards:
-            r.append(np.clip(reward, -1., 1.))
+            r.append(np.clip(reward, -5., 5.))
         return r
 
 parser = argparse.ArgumentParser()

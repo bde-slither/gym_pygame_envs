@@ -127,7 +127,7 @@ class snakeClass(object):
         for i in range(len(self.body[:-1])):
             if self.body[-1].rect.colliderect(self.body[i]):
                 self.dead = True
-
+                
         for i, s in enumerate(snake):
             if i != idx:
                 for b in s.body:
@@ -260,8 +260,8 @@ class SnakeGameV2(base.PyGameWrapper):
 
         SCREEN_SIZE = WIDTH * HEIGHT
 
-        #super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
-        super().__init__(WIDTH, HEIGHT, fps=10,force_fps=False)
+        super().__init__(WIDTH, HEIGHT, fps=FPS,force_fps=True)
+        #super().__init__(WIDTH, HEIGHT, fps=10,force_fps=False)
 
         if pygame.font:
             self.font = pygame.font.Font(None, 30)
@@ -358,7 +358,10 @@ class SnakeGameV2(base.PyGameWrapper):
         reward = []
         for idx, s in enumerate(self.snake):
             s.update(self.screen, self.food, idx, self.snake)
-            reward.append(s.score - s.prevScore + 0.001+(s.killedCount)+(s.dieCount))
+            if s.dead:
+                reward.append(s.score - s.prevScore + 0.001+(KILL*s.killedCount)+(DIE*s.dieCount)-2)
+            else:
+                reward.append(s.score - s.prevScore + 0.001+(KILL*s.killedCount)+(DIE*s.dieCount))        
             s.prevScore = s.score
             done.append(s.dead)
             if s.score == MAX_SCORE:

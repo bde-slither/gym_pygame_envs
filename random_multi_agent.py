@@ -40,7 +40,7 @@ if __name__ == '__main__':
     for i in range(0, n_agents):
         agents.append(RandomAgent(env.action_space))
 
-    episode_count = 1
+    episode_count = 10000
     reward = 0
     done = False
     #stepCount = 0
@@ -53,6 +53,9 @@ if __name__ == '__main__':
                 actions+=(agents[i].act(ob, reward, done),)
             ob, reward, done, _ = env.step(actions)
             #if done:
+            print (reward)
+            print(done)
+            input()
             allDone = True
             for d in done:
                 if not d:
