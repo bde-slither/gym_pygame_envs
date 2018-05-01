@@ -62,29 +62,29 @@ register(
     id='snake-greedy-single-coop-v2',
     entry_point='gym_multi_envs.envs:SnakeGameGreedySingleV2',
     #first snake is controlled by rl, second is greedy approach
-    kwargs={'WIDTH': 180, 'HEIGHT': 120, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 2, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':2, 'DIE':0}
+    kwargs={'WIDTH': 180, 'HEIGHT': 120, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 2, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':-2, 'DIE':0}
 )
 register(
     id='snake-greedy-single-comp-v2',
     entry_point='gym_multi_envs.envs:SnakeGameGreedySingleV2',
     #first snake is controlled by rl, second is greedy approach
-    kwargs={'WIDTH': 180, 'HEIGHT': 120, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 2, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':-2, 'DIE':0}
+    kwargs={'WIDTH': 180, 'HEIGHT': 120, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 2, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':2, 'DIE':0}
 )
 register(
     id='snake-greedy-single-window-v2',
     entry_point='gym_multi_envs.envs:SnakeGameGreedySingleV2',
     #first snake is controlled by rl, second is greedy approach
-    kwargs={'WIDTH': 720, 'HEIGHT': 480, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 2, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':0, 'DIE':0}
+    kwargs={'WIDTH': 720, 'HEIGHT': 480, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 5, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':0, 'DIE':0}
 )
 register(
     id='snake-greedy-single-window-coop-v2',
     entry_point='gym_multi_envs.envs:SnakeGameGreedySingleV2',
     #first snake is controlled by rl, second is greedy approach
-    kwargs={'WIDTH': 720, 'HEIGHT': 480, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 2, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':2, 'DIE':0}
+    kwargs={'WIDTH': 720, 'HEIGHT': 480, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 5, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':-2, 'DIE':0}
 )
 register(
     id='snake-greedy-single-window-comp-v2',
     entry_point='gym_multi_envs.envs:SnakeGameGreedySingleV2',
     #first snake is controlled by rl, second is greedy approach
-    kwargs={'WIDTH': 720, 'HEIGHT': 480, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 2, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':-2, 'DIE':0}
+    kwargs={'WIDTH': 720, 'HEIGHT': 480, 'FOOD_COUNT': 10, 'SNAKE_COUNT': 5, 'FPS': 1000, 'MAX_SCORE': 50, 'MAX_STEP': 3000, 'KILL':2, 'DIE':0}
 )

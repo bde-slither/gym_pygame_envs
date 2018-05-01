@@ -400,7 +400,6 @@ class SnakeGameGreedySingleV2(base.PyGameWrapper):
                         break
                 #print ("isColBody", isCol)
             
-            '''
             if not isCol:
                 for i, s in enumerate(self.snake):
                     if i != idx:
@@ -409,7 +408,7 @@ class SnakeGameGreedySingleV2(base.PyGameWrapper):
                                 isCol = True
                                 break
                 #print("isColSnake", isCol)
-            '''
+            
             if not isCol:
                 dirs.append(bc[1])
 
@@ -482,21 +481,12 @@ class SnakeGameGreedySingleV2(base.PyGameWrapper):
         #self.show_stats()
         #print ('out', done)
 
-        ex_reward = 0
-        
         global CROP_HEIGHT
         global CROP_WIDTH
 
         ob = self.get_obs()
-        if doneOverride:
-            ex_reward = 5
-        elif ob[0][1] == True:
-            ex_reward = -2
-        else:
-            ex_reward = int(self.stepCount / 50) * 0.05
-
         #print ('ob', type(ob), type(ob[0]), type(ob[0][0]))
-        return ob[0][0], reward[0] + ex_reward, doneOverride or ob[0][1], {}
+        return ob[0][0], reward[0], doneOverride or ob[0][1], {}
 
     def get_obs(self):
         global CROP_HEIGHT
